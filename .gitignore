@@ -1,0 +1,11 @@
+*.log
+*.pot
+*.pyc
+**/node_modules/
+__pycache__
+db.sqlite3
+env
+.env
+dist
+media
+.DS_Store
