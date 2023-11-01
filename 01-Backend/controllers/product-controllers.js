@@ -113,54 +113,25 @@ const updateProduct = async (req, res, next) => {
 };
   
 const deleteProduct = async (req, res, next) => {
-    console.log('Controlador de eliminación de productos iniciado');
-
     const productID = req.params.pid;
-    console.log('Product ID:', productID);
-  
-    let product;
+
     try {
-        product = await Product.findById(productID);
-        console.log('Producto encontrado:', product);
+        const product = await Product.findById(productID);
+
+        if (!product) {
+            const error = new HttpError('Could not find product for this id.', 404);
+            return next(error);
+        }
+
+        await product.remove();
+
+        res.status(200).json({ message: 'Deleted product.' });
     } catch (err) {
-        console.log('Error al buscar el producto:', err);
         const error = new HttpError('Something went wrong, could not delete product.', 500);
         return next(error);
     }
-  
-    if (!product) {
-        const error = new HttpError('Could not find product for this id.', 404);
-        return next(error);
-    }
-  
-    const imagePath = product.image;
-  
-    let session
-    try {
-        session = await mongoose.startSession();
-        session.startTransaction();
-
-        await product.remove({ session });
-
-        await session.commitTransaction();
-    } catch (err) {
-        if (session) {
-            session.abortTransaction();
-        }
-        const error = new HttpError('Something went wrong, could not delete product.', 500);
-        return next(error);
-    }finally {
-        if (session) {
-            session.endSession();
-        }
-    }
-  
-    //fs.unlink(imagePath, err => {
-    //  console.log(err);
-    //});
-  
-    res.status(200).json({ message: 'Deleted product.' });
 };
+
   
 exports.getAllProducts = getAllProducts;
 exports.getProductById = getProductById;

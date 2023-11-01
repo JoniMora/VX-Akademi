@@ -101,41 +101,20 @@ const updateCategory = async (req, res, next) => {
   
 const deleteCategory = async (req, res, next) => {
     const categoryID = req.params.cid;
-  
-    let category;
+
     try {
-        category = await Category.findByIdAndDelete(categoryID);
+        const result = await Category.findByIdAndDelete(categoryID);
+
+        if (!result) {
+            const error = new HttpError('Could not find category for this id.', 404);
+            return next(error);
+        }
+
+        res.status(200).json({ message: 'Deleted category.' });
     } catch (err) {
         const error = new HttpError('Something went wrong, could not delete category.', 500);
         return next(error);
     }
-  
-    if (!category) {
-        const error = new HttpError('Could not find category for this id.', 404);
-        return next(error);
-    }
-
-    let session
-    try {
-        session = await mongoose.startSession();
-        session.startTransaction();
-
-        await category.remove({ session });
-
-        await session.commitTransaction();
-    } catch (err) {
-        if (session) {
-            session.abortTransaction();
-        }
-        const error = new HttpError('Something went wrong, could not delete category.', 500);
-        return next(error);
-    }finally {
-        if (session) {
-            session.endSession();
-        }
-    }
-  
-    res.status(200).json({ message: 'Deleted category.' });
 };
 
 exports.getAllCategory = getAllCategory;

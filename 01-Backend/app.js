@@ -26,7 +26,7 @@ app.use((error, req, res, next) => {
   res.json({message: error.message || 'An unknown error occurred!'});
 });
 
-mongoose.connect(`mongodb+srv://<user>:<password>2@cluster0.xugxw6p.mongodb.net/practica1?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(`mongodb+srv://devMora:leg.100462@cluster0.xugxw6p.mongodb.net/practica1?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     app.listen(5000);
   })
