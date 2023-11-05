@@ -5,9 +5,8 @@ const Product = require('../models/product')
 const HttpError = require('../models/http-error');
 
 const getAllProducts = async (req, res, next) => {
-    let products;
     try {
-        products = await Product.find(); 
+        const products = await Product.find(); 
 
         res.status(200).json({ products: products });
     } catch (err) {
@@ -17,11 +16,11 @@ const getAllProducts = async (req, res, next) => {
 };
 
 const getProductById = async (req, res, next) => {
-    const productId = req.params.pid;
+    const productID = req.params.pid;
   
     let product;
     try {
-        product = await Product.findById(productId);
+        const product = await Product.findById(productID);
     } catch (err) {
         const error = new HttpError('Something went wrong, could not update product.', 500);
         return next(error);
