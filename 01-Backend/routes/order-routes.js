@@ -15,6 +15,4 @@ router.delete('/:oid', orderControllers.deleteOrder)
 
 router.delete('/:oid/:pid', orderControllers.deleteProductCart)
 
-
-
 module.exports = router;

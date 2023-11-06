@@ -1,124 +1,100 @@
-const mongoose = require('mongoose');
-const { validationResult } = require('express-validator');
+const mongoose = require('mongoose')
+const { validationResult } = require('express-validator')
 
 const Category = require('../models/category')
-const HttpError = require('../models/http-error');
+const HttpError = require('../models/http-error')
 
 const getAllCategory = async (req, res, next) => {
-    let categories;
     try {
-        categories = await Category.find(); 
+        const categories = await Category.find()
 
-        res.status(200).json({ categories: categories });
+        res.status(200).json({ categories: categories })
     } catch (err) {
-        const error = new HttpError('Could not retrieve categories.', 500);
-        return next(error);
+        return next(new HttpError('Could not retrieve categories.', 500))
     }
-};
+}
 
 const getCategoryById = async (req, res, next) => {
-    const categoryID = req.params.cid;
-  
-    let category;
+    const categoryID = req.params.cid
     try {
-        category = await Category.findById(categoryID);
+        const category = await Category.findById(categoryID)
+        if (!category) {
+            return next(new HttpError('Could not find category for this id.', 404))
+        }
+      
+        res.json({ category: category.toObject({ getters: true }) })
     } catch (err) {
-        const error = new HttpError('Something went wrong, could not update category.', 500);
-        return next(error);
+        return next(new HttpError('Something went wrong, could not update category.', 500))
     }
   
-    if (!category) {
-        const error = new HttpError('Could not find category for this id.', 404);
-        return next(error);
-    }
-  
-    res.json({ category: category.toObject({ getters: true }) });
-};
+}
 
 const createCategory = async (req, res, next) => {
-    const errors = validationResult(req);
+    const errors = validationResult(req)
   
     if (!errors.isEmpty()) {
-        return res.status(422).json({ errors: errors.array() });
+        return res.status(422).json({ errors: errors.array() })
     }
-  
-    const { name } = req.body;
 
+    const { name } = req.body
     const newCategory = new Category({
         name
-    });
+    })
 
     let session
     try {
-        const session = await mongoose.startSession();
-        session.startTransaction();
+        const session = await mongoose.startSession()
+        session.startTransaction()
     
-        await newCategory.save({ session });
+        await newCategory.save({ session })
         
-        await session.commitTransaction();
+        await session.commitTransaction()
+        session.endSession()
+        res.status(201).json({ category: newCategory.toObject({ getters: true }) })
     } catch (err) {
-        if (session) {
-            session.abortTransaction();
-        }
-        return next(new HttpError('Creating category failed, please try again.', 500));
-    } finally {
-        if (session) {
-            session.endSession();
-        }
-    }
-
-    res.status(201).json({ category: newCategory.toObject({ getters: true }) });
-};
+        return next(new HttpError('Creating category failed, please try again.', 500))
+    } 
+}
 
 const updateCategory = async (req, res, next) => {
-    const errors = validationResult(req);
+    const errors = validationResult(req)
     if (!errors.isEmpty()) {
-        return next(new HttpError('Invalid inputs passed, please check your data.', 422));
+        return next(new HttpError('Invalid inputs passed, please check your data.', 422))
     }
   
-    const { name } = req.body;
-    const categoryID = req.params.cid;
-  
-    let category;
+    const { name } = req.body
+    const categoryID = req.params.cid
+
     try {
-        category = await Category.findById(categoryID);
+        const category = await Category.findById(categoryID)
+        if (!category) {
+            return next(new HttpError('Could not find category for this id.', 404))
+        }
+        category.name = name
+
+        await category.save()
     } catch (err) {
-        const error = new HttpError('Something went wrong, could not update category.', 500);
-        return next(error);
+        return next(new HttpError('Something went wrong, could not update category.', 500))
     }
-  
-    category.name = name;
-  
-    try {
-        await category.save();
-    } catch (err) {
-        const error = new HttpError('Something went wrong, could not update category.', 500);
-        return next(error);
-    }
-  
-    res.status(200).json({ category: category.toObject({ getters: true }) });
-};
+
+    res.status(200).json({ category: category.toObject({ getters: true }) })
+}
   
 const deleteCategory = async (req, res, next) => {
-    const categoryID = req.params.cid;
-
+    const categoryID = req.params.cid
     try {
-        const result = await Category.findByIdAndDelete(categoryID);
-
+        const result = await Category.findByIdAndDelete(categoryID)
         if (!result) {
-            const error = new HttpError('Could not find category for this id.', 404);
-            return next(error);
+            return next(new HttpError('Could not find category for this id.', 404))
         }
 
-        res.status(200).json({ message: 'Deleted category.' });
+        res.status(200).json({ message: 'Deleted category.' })
     } catch (err) {
-        const error = new HttpError('Something went wrong, could not delete category.', 500);
-        return next(error);
+        return next(new HttpError('Something went wrong, could not delete category.', 500))
     }
-};
-
-exports.getAllCategory = getAllCategory;
-exports.getCategoryById = getCategoryById;
-exports.createCategory = createCategory;
-exports.updateCategory = updateCategory;
-exports.deleteCategory = deleteCategory;
+}
+exports.getAllCategory = getAllCategory
+exports.getCategoryById = getCategoryById
+exports.createCategory = createCategory
+exports.updateCategory = updateCategory
+exports.deleteCategory = deleteCategory
