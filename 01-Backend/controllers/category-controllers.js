@@ -73,11 +73,10 @@ const updateCategory = async (req, res, next) => {
         category.name = name
 
         await category.save()
+        res.status(200).json({ category: category.toObject({ getters: true }) })
     } catch (err) {
         return next(new HttpError('Something went wrong, could not update category.', 500))
     }
-
-    res.status(200).json({ category: category.toObject({ getters: true }) })
 }
   
 const deleteCategory = async (req, res, next) => {

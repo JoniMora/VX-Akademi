@@ -1,6 +1,4 @@
-const mongoose = require('mongoose')
 const { validationResult } = require('express-validator')
-
 const Product = require('../models/product')
 const HttpError = require('../models/http-error')
 
@@ -95,7 +93,7 @@ const deleteProduct = async (req, res, next) => {
             return next(new HttpError('Could not find product for this id.', 404))
         }
 
-        await product.remove()
+        await product.deleteOne()
 
         res.status(200).json({ message: 'Deleted product.' })
     } catch (err) {
