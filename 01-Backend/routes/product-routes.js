@@ -1,13 +1,15 @@
-const express = require('express');
-const { check } = require('express-validator');
+const express = require('express')
+const { check } = require('express-validator')
 
-const productControllers = require('../controllers/product-controllers');
+const productControllers = require('../controllers/product-controllers')
 
-const router = express.Router();
+const router = express.Router()
 
-router.get('/', productControllers.getAllProducts);
+router.get('/', productControllers.getAllProducts)
 
-router.get('/:pid', productControllers.getProductById);
+router.get('/:pid', productControllers.getProductById)
+
+router.get('/category/:cid?', productControllers.getProductsByCategory)
 
 router.post(
     '/',
@@ -20,7 +22,7 @@ router.post(
       check('category').optional().isMongoId(),
     ],
     productControllers.createProduct
-);
+)
 
 router.patch(
     '/:pid',
@@ -35,8 +37,8 @@ router.patch(
       check('category').optional().isMongoId(),
     ],
     productControllers.updateProduct
-);
+)
 
-router.delete('/:pid', productControllers.deleteProduct);
+router.delete('/:pid', productControllers.deleteProduct)
 
 module.exports = router;

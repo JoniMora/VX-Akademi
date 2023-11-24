@@ -3,6 +3,32 @@ const { Order, OrderItem } = require('../models/order')
 const HttpError = require('../models/http-error')
 const Product = require('../models/product')
 
+const getAllOrders = async (req, res, next) => {
+    try {
+      const orders = await Order.find()
+      res.json(orders)
+    } catch (error) {
+      return next(new HttpError('Error fetching orders', 500))
+    }
+}
+
+const getOrderDetails = async (req, res, next) => {
+    try {
+        const orderID = req.params.oid
+
+        const order = await Order.findById(orderID).populate('items.product')
+        if (!order) {
+            return next(new HttpError('Could not find order for this id.', 404))
+        }
+        
+        res.json(order)
+    } catch (error) {
+        console.log(error)
+        return next(new HttpError('Error fetching order', 500))
+    }
+}
+
+
 const createOrder = async (req, res) => {
   try {
         const errors = validationResult(req)
@@ -171,7 +197,7 @@ const deleteOrder = async (req, res) => {
     }
 }
 
-const deleteProductCart = async (req, res) => {
+const deleteProductCart = async (req, res, next) => {
     const orderID = req.params.oid
     const productID = req.params.pid
   
@@ -199,6 +225,8 @@ const deleteProductCart = async (req, res) => {
     }
 }
   
+exports.getAllOrders = getAllOrders
+exports.getOrderDetails = getOrderDetails
 exports.createOrder = createOrder
 exports.addProductCart = addProductCart
 exports.updateProductCart = updateProductCart

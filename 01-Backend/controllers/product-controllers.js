@@ -23,9 +23,27 @@ const getProductById = async (req, res, next) => {
         
         res.json({ product: product.toObject({ getters: true }) })
     } catch (err) {
-        return next(new HttpError('Something went wrong, could not update product.', 500));
+        return next(new HttpError('Something went wrong, could not retrieve product.', 500))
     }
 }
+
+const getProductsByCategory = async (req, res, next) => {
+    const categoryID = req.params.cid
+    try {
+        const query = categoryID ? { category: { $exists: true, $eq: categoryID } } : { category: { $exists: false, $eq: null } }
+
+        const products = await Product.find(query).populate('category')
+
+        if (!products || products.length === 0) {
+            return next(new HttpError('No products found for this category.', 404))
+        }
+
+        res.json({ products: products.map(product => product.toObject({ getters: true })) })
+    } catch (err) {
+        return next(new HttpError('Something went wrong, could not retrieve products.', 500))
+    }
+}
+
 
 const createProduct = async (req, res, next) => {
     try {
@@ -102,8 +120,9 @@ const deleteProduct = async (req, res, next) => {
 };
 
   
-exports.getAllProducts = getAllProducts;
-exports.getProductById = getProductById;
-exports.createProduct = createProduct;
-exports.updateProduct = updateProduct;
-exports.deleteProduct = deleteProduct;
+exports.getAllProducts = getAllProducts
+exports.getProductById = getProductById
+exports.getProductsByCategory = getProductsByCategory
+exports.createProduct = createProduct
+exports.updateProduct = updateProduct
+exports.deleteProduct = deleteProduct
